@@ -1,6 +1,16 @@
 # Xcode
+.DS_Store
+build/
 DerivedData/
 *.xcuserstate
 *.xcworkspace
 *.xcodeproj/project.xcworkspace/
 *.xcodeproj/xcuserdata/
+
+# Swift Package Manager
+.swiftpm
+.build/
+
+# User-specific
+*.perspectivev3
+xcuserdata/

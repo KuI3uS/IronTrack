@@ -21,6 +21,7 @@ extension WorkoutDay {
         exercise.reps = 5
         exercise.sets = 4
         exercise.workoutDay = day
+        exercise.date = Date()
 
         return day
     }
