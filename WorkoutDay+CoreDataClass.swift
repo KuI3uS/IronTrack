@@ -2,7 +2,7 @@
 //  WorkoutDay+CoreDataClass.swift
 //  IronTrack
 //
-//  Created by Jakub Marcinkowski on 08/04/2025.
+//  Created by Jakub Marcinkowski on 15/04/2025.
 //
 //
 

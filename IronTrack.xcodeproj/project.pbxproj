@@ -8,10 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		897AF3E82DA5C01F0017F5F7 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 897AF3E72DA5C0190017F5F7 /* README.md */; };
-		898FBFF92DA5691900604BEE /* WorkoutDay+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 898FBFF82DA5691900604BEE /* WorkoutDay+CoreDataProperties.swift */; };
-		898FBFFA2DA5691900604BEE /* WorkoutDay+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 898FBFF72DA5691900604BEE /* WorkoutDay+CoreDataClass.swift */; };
-		898FBFFD2DA5745800604BEE /* Exercise+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 898FBFFB2DA5745800604BEE /* Exercise+CoreDataClass.swift */; };
-		898FBFFE2DA5745800604BEE /* Exercise+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 898FBFFC2DA5745800604BEE /* Exercise+CoreDataProperties.swift */; };
+		89B9072F2DAF015600F709BC /* Exercise+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89B9072C2DAF015600F709BC /* Exercise+CoreDataProperties.swift */; };
+		89B907302DAF015600F709BC /* WorkoutDay+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89B9072E2DAF015600F709BC /* WorkoutDay+CoreDataProperties.swift */; };
+		89B907312DAF015600F709BC /* Exercise+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89B9072B2DAF015600F709BC /* Exercise+CoreDataClass.swift */; };
+		89B907322DAF015600F709BC /* WorkoutDay+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89B9072D2DAF015600F709BC /* WorkoutDay+CoreDataClass.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -33,10 +33,10 @@
 
 /* Begin PBXFileReference section */
 		897AF3E72DA5C0190017F5F7 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
-		898FBFF72DA5691900604BEE /* WorkoutDay+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WorkoutDay+CoreDataClass.swift"; sourceTree = "<group>"; };
-		898FBFF82DA5691900604BEE /* WorkoutDay+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WorkoutDay+CoreDataProperties.swift"; sourceTree = "<group>"; };
-		898FBFFB2DA5745800604BEE /* Exercise+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Exercise+CoreDataClass.swift"; sourceTree = "<group>"; };
-		898FBFFC2DA5745800604BEE /* Exercise+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Exercise+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		89B9072B2DAF015600F709BC /* Exercise+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Exercise+CoreDataClass.swift"; sourceTree = "<group>"; };
+		89B9072C2DAF015600F709BC /* Exercise+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Exercise+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		89B9072D2DAF015600F709BC /* WorkoutDay+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WorkoutDay+CoreDataClass.swift"; sourceTree = "<group>"; };
+		89B9072E2DAF015600F709BC /* WorkoutDay+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WorkoutDay+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		89EDCC812DA3CB2F00D261B1 /* IronTrack.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = IronTrack.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		89EDCC942DA3CB3000D261B1 /* IronTrackTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = IronTrackTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		89EDCC9E2DA3CB3000D261B1 /* IronTrackUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = IronTrackUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -88,11 +88,11 @@
 		89EDCC782DA3CB2F00D261B1 = {
 			isa = PBXGroup;
 			children = (
+				89B9072B2DAF015600F709BC /* Exercise+CoreDataClass.swift */,
+				89B9072C2DAF015600F709BC /* Exercise+CoreDataProperties.swift */,
+				89B9072D2DAF015600F709BC /* WorkoutDay+CoreDataClass.swift */,
+				89B9072E2DAF015600F709BC /* WorkoutDay+CoreDataProperties.swift */,
 				897AF3E72DA5C0190017F5F7 /* README.md */,
-				898FBFFB2DA5745800604BEE /* Exercise+CoreDataClass.swift */,
-				898FBFFC2DA5745800604BEE /* Exercise+CoreDataProperties.swift */,
-				898FBFF72DA5691900604BEE /* WorkoutDay+CoreDataClass.swift */,
-				898FBFF82DA5691900604BEE /* WorkoutDay+CoreDataProperties.swift */,
 				89EDCC832DA3CB2F00D261B1 /* IronTrack */,
 				89EDCC972DA3CB3000D261B1 /* IronTrackTests */,
 				89EDCCA12DA3CB3000D261B1 /* IronTrackUITests */,
@@ -255,10 +255,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				898FBFFD2DA5745800604BEE /* Exercise+CoreDataClass.swift in Sources */,
-				898FBFFE2DA5745800604BEE /* Exercise+CoreDataProperties.swift in Sources */,
-				898FBFF92DA5691900604BEE /* WorkoutDay+CoreDataProperties.swift in Sources */,
-				898FBFFA2DA5691900604BEE /* WorkoutDay+CoreDataClass.swift in Sources */,
+				89B9072F2DAF015600F709BC /* Exercise+CoreDataProperties.swift in Sources */,
+				89B907302DAF015600F709BC /* WorkoutDay+CoreDataProperties.swift in Sources */,
+				89B907312DAF015600F709BC /* Exercise+CoreDataClass.swift in Sources */,
+				89B907322DAF015600F709BC /* WorkoutDay+CoreDataClass.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

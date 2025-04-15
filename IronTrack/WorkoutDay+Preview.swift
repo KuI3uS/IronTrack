@@ -9,19 +9,17 @@ import Foundation
 import CoreData
 
 extension WorkoutDay {
-    static var preview: WorkoutDay {
-        let context = PersistenceController.preview.container.viewContext
+    static func preview(in context: NSManagedObjectContext) -> WorkoutDay {
         let day = WorkoutDay(context: context)
-        day.name = "Dzień przykładowy"
+        day.name = "Środa"
         day.date = Date()
 
-        // Dodaj przykładowe ćwiczenia
         let exercise = Exercise(context: context)
-        exercise.name = "Martwy ciąg"
-        exercise.reps = 5
+        exercise.name = "Wyciskanie sztangi"
+        exercise.reps = 10
         exercise.sets = 4
-        exercise.workoutDay = day
         exercise.date = Date()
+        exercise.workoutDay = day
 
         return day
     }

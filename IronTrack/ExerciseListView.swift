@@ -1,116 +1,78 @@
-//
-//  ExerciseListView.swift
-//  IronTrack
-//
-//  Created by Jakub Marcinkowski on 08/04/2025.
-//
-
 import SwiftUI
 import CoreData
 
 struct ExerciseListView: View {
     @Environment(\.managedObjectContext) private var viewContext
+    @Environment(\.dismiss) private var dismiss
 
     @ObservedObject var workoutDay: WorkoutDay
 
-    @State private var exerciseName: String = ""
-    @State private var reps: String = ""
-    @State private var sets: String = ""
-    @State private var exerciseDate: Date = Date()
+    @State private var exerciseName = ""
+    @State private var note = ""
+    @State private var reps = ""
+    @State private var sets = ""
+    @State private var exerciseDate = Date()
 
     var body: some View {
-        VStack(alignment: .leading) {
+        VStack(alignment: .leading, spacing: 12) {
             Text("Dodaj ćwiczenie")
-                .font(.headline)
+                .font(.title2)
+                .bold()
 
-            DatePicker("Data ćwiczenia", selection: $exerciseDate, displayedComponents: [.date])
+            DatePicker("Data", selection: $exerciseDate, displayedComponents: [.date])
+
             TextField("Nazwa ćwiczenia", text: $exerciseName)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .textFieldStyle(.roundedBorder)
+
             TextField("Powtórzenia", text: $reps)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
+                .keyboardTypeCompat(.numberPad)
 
-            Button("Dodaj") {
+            TextField("Serie", text: $sets)
+                .textFieldStyle(.roundedBorder)
+                .keyboardTypeCompat(.numberPad)
+
+            TextField("Notatka (opcjonalnie)", text: $note)
+                .textFieldStyle(.roundedBorder)
+
+            Button("Dodaj ćwiczenie") {
                 addExercise()
             }
-            .padding(.vertical)
+            .disabled(exerciseName.isEmpty || Int(reps) == nil || Int(sets) == nil)
+            .buttonStyle(.borderedProminent)
+            .padding(.top)
 
-            Divider()
-
-            Text("Ćwiczenia")
-                .font(.title2)
-
-            if let exercises = (workoutDay.exercises?.allObjects as? [Exercise])?.sorted(by: { ($0.date ?? .distantPast) > ($1.date ?? .distantPast) }) {
-                if exercises.isEmpty {
-                    Text("Brak ćwiczeń")
-                        .foregroundColor(.gray)
-                        .italic()
-                } else {
-                    List {
-                        ForEach(exercises, id: \.self) { exercise in
-                            ExerciseRowView(exercise: exercise)
-                        }
-                        .onDelete(perform: deleteExercise)
-                    }
-                }
-            } else {
-                Text("Brak ćwiczeń")
-            }
+            Spacer()
         }
         .padding()
-        .navigationTitle(workoutDay.name ?? "Trening")
+        .navigationTitle("Nowe ćwiczenie")
     }
 
     private func addExercise() {
-        withAnimation {
-            let newExercise = Exercise(context: viewContext)
-            newExercise.name = exerciseName
-            newExercise.reps = Int16(reps) ?? 0
-            newExercise.sets = Int16(sets) ?? 0
-            newExercise.date = exerciseDate
-            newExercise.workoutDay = workoutDay
+        guard let context = workoutDay.managedObjectContext else {
+            print("Brak kontekstu dla workoutDay")
+            return
+        }
 
-            do {
-                try viewContext.save()
-                exerciseName = ""
-                reps = ""
-                sets = ""
-            } catch {
-                print("Błąd zapisu ćwiczenia: \(error.localizedDescription)")
-            }
+        let exercise = Exercise(context: context)
+        exercise.name = exerciseName
+        exercise.reps = Int16(reps) ?? 0
+        exercise.sets = Int16(sets) ?? 0
+        exercise.note = note
+        exercise.date = exerciseDate
+        exercise.workoutDay = workoutDay
+
+        do {
+            try context.save()
+            // Czyścimy formularz
+            exerciseName = ""
+            note = ""
+            reps = ""
+            sets = ""
+            exerciseDate = Date()
+            dismiss() // Zamyka widok po zapisaniu
+        } catch {
+            print("❌ Błąd zapisu: \(error.localizedDescription)")
         }
     }
-
-    private func deleteExercise(at offsets: IndexSet) {
-        if let exercises = (workoutDay.exercises?.allObjects as? [Exercise])?.sorted(by: { ($0.date ?? .distantPast) > ($1.date ?? .distantPast) }) {
-            for index in offsets {
-                viewContext.delete(exercises[index])
-            }
-            try? viewContext.save()
-        }
-    }
-}
-
-struct ExerciseRowView: View {
-    var exercise: Exercise
-
-    var body: some View {
-        VStack(alignment: .leading) {
-            Text(exercise.name ?? "")
-                .font(.headline)
-
-            Text("Powtórzeń: \(exercise.reps) / Serie: \(exercise.sets)")
-
-            if let date = exercise.date {
-                Text("Data: \(date.formatted(.dateTime.day().month().year()))")
-                    .font(.caption)
-                    .foregroundColor(.gray)
-            }
-        }
-        .padding(.vertical, 4)
-    }
-}
-
-#Preview {
-    ExerciseListView(workoutDay: WorkoutDay.preview)
-        .environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
 }

@@ -12,6 +12,7 @@
     <entity name="WorkoutDay" representedClassName=".WorkoutDay" syncable="YES">
         <attribute name="date" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="name" optional="YES" attributeType="String"/>
+        <attribute name="note" optional="YES" attributeType="String"/>
         <relationship name="exercises" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Exercise" inverseName="workoutDay" inverseEntity="Exercise"/>
     </entity>
 </model>
