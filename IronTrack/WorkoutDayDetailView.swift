@@ -16,7 +16,6 @@ struct WorkoutDayDetailView: View {
     init(workoutDay: WorkoutDay) {
         self.workoutDay = workoutDay
 
-        // Fetch tylko ćwiczeń z tego dnia
         let predicate = NSPredicate(format: "workoutDay == %@", workoutDay)
         _exercises = FetchRequest<Exercise>(
             sortDescriptors: [NSSortDescriptor(keyPath: \Exercise.date, ascending: true)],
@@ -31,6 +30,39 @@ struct WorkoutDayDetailView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
+            headerView
+            noteEditorView
+            progressView
+            addButton
+            exerciseListView
+            finishDayButton
+            Spacer()
+        }
+        .padding()
+        .onAppear {
+            dayNote = workoutDay.note ?? ""
+        }
+        .sheet(isPresented: $showExerciseSheet) {
+            ExerciseListView(workoutDay: workoutDay) {
+                refreshTrigger = UUID()
+            }
+            .environment(\.managedObjectContext, viewContext)
+        }
+        .sheet(item: $selectedExerciseForEdit) { exercise in
+            ExerciseEditView(exercise: exercise) {
+                refreshTrigger = UUID()
+            }
+        }
+        .alert("Dzień zakończony ✅", isPresented: $showAlert) {
+            Button("OK", role: .cancel) { }
+        }
+        .navigationTitle("Szczegóły dnia")
+    }
+
+    // MARK: - Widoki pomocnicze
+
+    private var headerView: some View {
+        VStack(alignment: .leading, spacing: 4) {
             Text(workoutDay.name ?? "Trening")
                 .font(.title)
 
@@ -39,7 +71,11 @@ struct WorkoutDayDetailView: View {
                     .font(.subheadline)
                     .foregroundColor(.gray)
             }
+        }
+    }
 
+    private var noteEditorView: some View {
+        VStack(alignment: .leading, spacing: 8) {
             Text("Notatka")
                 .font(.headline)
 
@@ -50,23 +86,25 @@ struct WorkoutDayDetailView: View {
                 }
                 .frame(height: 100)
                 .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gray.opacity(0.3)))
+        }
+    }
 
-            Text("Wykonane ćwiczenia: \(completedCount)/\(exercises.count)")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
+    private var progressView: some View {
+        Text("Wykonane ćwiczenia: \(completedCount)/\(exercises.count)")
+            .font(.subheadline)
+            .foregroundColor(.secondary)
+    }
 
-            Button {
-                showExerciseSheet = true
-            } label: {
-                Label("Dodaj ćwiczenie", systemImage: "plus.circle")
-            }
-            .sheet(isPresented: $showExerciseSheet) {
-                ExerciseListView(workoutDay: workoutDay) {
-                    refreshTrigger = UUID()
-                }
-                .environment(\.managedObjectContext, viewContext)
-            }
+    private var addButton: some View {
+        Button {
+            showExerciseSheet = true
+        } label: {
+            Label("Dodaj ćwiczenie", systemImage: "plus.circle")
+        }
+    }
 
+    private var exerciseListView: some View {
+        Group {
             if exercises.isEmpty {
                 Text("Brak ćwiczeń")
                     .foregroundColor(.gray)
@@ -74,62 +112,63 @@ struct WorkoutDayDetailView: View {
             } else {
                 List {
                     ForEach(exercises) { exercise in
-                        HStack {
-                            Button {
-                                exercise.isCompleted.toggle()
-                                save()
-                            } label: {
-                                Image(systemName: exercise.isCompleted ? "checkmark.circle.fill" : "circle")
-                                    .foregroundColor(exercise.isCompleted ? .green : .gray)
-                            }
-
-                            VStack(alignment: .leading) {
-                                Text(exercise.name ?? "")
-                                    .font(.headline)
-                                Text("Powtórzeń: \(exercise.reps) / Serie: \(exercise.sets)")
-                                    .font(.subheadline)
-                                    .foregroundColor(.gray)
-                                if let note = exercise.note, !note.isEmpty {
-                                    Text(note)
-                                        .font(.footnote)
-                                        .foregroundColor(.blue)
-                                }
-                            }
-                            .onTapGesture {
-                                selectedExerciseForEdit = exercise
-                            }
-                        }
+                        exerciseRow(for: exercise)
                     }
                     .onDelete(perform: deleteExercise)
                 }
-                .id(refreshTrigger) // Wymusza odświeżenie listy
+                .id(refreshTrigger)
             }
+        }
+    }
 
-            Button("Zakończ dzień") {
-                for ex in exercises {
-                    ex.isCompleted = true
-                }
+    private func exerciseRow(for exercise: Exercise) -> some View {
+        HStack {
+            Button {
+                exercise.isCompleted.toggle()
                 save()
-                showAlert = true
-            }
-            .buttonStyle(.borderedProminent)
-            .padding(.top)
+            } label: {
+                Image(systemName: exercise.isCompleted ? "checkmark.circle.fill" : "circle")
+                    .foregroundColor(exercise.isCompleted ? .green : .gray)
+                    .imageScale(.large)
+                    .padding(10)
 
-            Spacer()
-        }
-        .padding()
-        .onAppear {
-            dayNote = workoutDay.note ?? ""
-        }
-        .alert("Dzień zakończony ✅", isPresented: $showAlert) {
-            Button("OK", role: .cancel) { }
-        }
-        .sheet(item: $selectedExerciseForEdit) { exercise in
-            ExerciseEditView(exercise: exercise) {
-                refreshTrigger = UUID() // odśwież widok
+                #if os(iOS)
+                    .background(Color(UIColor.systemGray6))
+                #endif
+
+                    .clipShape(Circle())
+            }
+            .buttonStyle(.plain)
+
+            VStack(alignment: .leading) {
+                Text(exercise.name ?? "")
+                    .font(.headline)
+                Text("Powtórzeń: \(exercise.reps) / Serie: \(exercise.sets)")
+                    .font(.subheadline)
+                    .foregroundColor(.gray)
+
+                if let note = exercise.note, !note.isEmpty {
+                    Text(note)
+                        .font(.footnote)
+                        .foregroundColor(.blue)
+                }
+            }
+            .onTapGesture {
+                selectedExerciseForEdit = exercise
             }
         }
-        .navigationTitle("Szczegóły dnia")
+    }
+
+    private var finishDayButton: some View {
+        Button("Zakończ dzień") {
+            for ex in exercises {
+                ex.isCompleted = true
+            }
+            save()
+            showAlert = true
+        }
+        .buttonStyle(.borderedProminent)
+        .padding(.top)
     }
 
     private func deleteExercise(at offsets: IndexSet) {

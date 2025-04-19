@@ -9,41 +9,30 @@ struct ExerciseListView: View {
     var onSave: (() -> Void)? = nil
 
     @State private var exerciseName = ""
-    @State private var note = ""
     @State private var reps = ""
     @State private var sets = ""
+    @State private var note = ""
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Dodaj ćwiczenie")
-                .font(.title2)
-                .bold()
+        NavigationView {
+            Form {
+                Section(header: Text("Nowe ćwiczenie")) {
+                    TextField("Nazwa", text: $exerciseName)
+                    TextField("Powtórzenia", text: $reps)
+                        .keyboardTypeCompat(.numberPad)
+                    TextField("Serie", text: $sets)
+                        .keyboardTypeCompat(.numberPad)
+                    TextField("Notatka (opcjonalnie)", text: $note)
+                }
 
-            TextField("Nazwa ćwiczenia", text: $exerciseName)
-                .textFieldStyle(.roundedBorder)
-
-            TextField("Powtórzenia", text: $reps)
-                .keyboardTypeCompat(.numberPad)
-                .textFieldStyle(.roundedBorder)
-
-            TextField("Serie", text: $sets)
-                .keyboardTypeCompat(.numberPad)
-                .textFieldStyle(.roundedBorder)
-
-            TextField("Notatka (opcjonalnie)", text: $note)
-                .textFieldStyle(.roundedBorder)
-
-            Button("Dodaj ćwiczenie") {
-                addExercise()
+                Button("Dodaj ćwiczenie") {
+                    addExercise()
+                }
+                .disabled(exerciseName.isEmpty || Int(reps) == nil || Int(sets) == nil)
+                .buttonStyle(.borderedProminent)
             }
-            .disabled(exerciseName.isEmpty || Int(reps) == nil || Int(sets) == nil)
-            .buttonStyle(.borderedProminent)
-            .padding(.top)
-
-            Spacer()
+            .navigationTitle("Dodaj ćwiczenie")
         }
-        .padding()
-        .navigationTitle("Nowe ćwiczenie")
     }
 
     private func addExercise() {
@@ -52,16 +41,15 @@ struct ExerciseListView: View {
         exercise.reps = Int16(reps) ?? 0
         exercise.sets = Int16(sets) ?? 0
         exercise.note = note
-        exercise.date = workoutDay.date
+        exercise.date = Date()
         exercise.workoutDay = workoutDay
 
         do {
             try viewContext.save()
-            print("✅ Ćwiczenie zapisane")
             onSave?()
             dismiss()
         } catch {
-            print("❌ Błąd zapisu: \(error.localizedDescription)")
+            print("❌ Błąd zapisu ćwiczenia: \(error.localizedDescription)")
         }
     }
 }

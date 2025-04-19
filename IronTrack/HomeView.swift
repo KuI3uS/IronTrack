@@ -1,5 +1,12 @@
 import SwiftUI
 import CoreData
+import Charts
+
+struct DailyExerciseStat: Identifiable {
+    let id = UUID()
+    let date: Date
+    let count: Int
+}
 
 struct HomeView: View {
     @Environment(\.managedObjectContext) private var viewContext
@@ -15,17 +22,34 @@ struct HomeView: View {
     var body: some View {
         NavigationStack {
             VStack(alignment: .leading) {
+
+                // 📊 WYKRES PROGRESU
+                Text("Progres tygodniowy")
+                    .font(.headline)
+                    .padding(.horizontal)
+
+                Chart(loadWeeklyStats()) { stat in
+                    BarMark(
+                        x: .value("Dzień", stat.date.formatted(.dateTime.weekday().locale(Locale(identifier: "pl_PL")))),
+                        y: .value("Wykonane", stat.count)
+                    )
+                }
+                .frame(height: 150)
+                .padding(.horizontal)
+
+                // 📅 TYDZIEŃ
                 Text("Twój tydzień")
                     .font(.title2)
                     .padding(.leading)
 
                 WeekCalendarView(selectedDate: $selectedDate)
 
+                // 📋 Lista dni treningowych
                 List {
                     ForEach(filteredWorkoutDays()) { day in
                         NavigationLink {
                             WorkoutDayDetailView(workoutDay: day)
-                                .environment(\.managedObjectContext, viewContext) // 👈 DODAJ TO
+                                .environment(\.managedObjectContext, viewContext)
                         } label: {
                             VStack(alignment: .leading) {
                                 Text(day.name ?? "Bez nazwy")
@@ -52,6 +76,7 @@ struct HomeView: View {
         }
     }
 
+    // 🔎 Filtrowanie dni dla aktualnie wybranego dnia
     private func filteredWorkoutDays() -> [WorkoutDay] {
         allWorkoutDays.filter { day in
             if let date = day.date {
@@ -61,6 +86,7 @@ struct HomeView: View {
         }
     }
 
+    // ➕ Dodaj dzień treningowy
     private func addWorkoutDay() {
         let today = selectedDate
 
@@ -99,5 +125,21 @@ struct HomeView: View {
         formatter.locale = Locale(identifier: "pl_PL")
         formatter.dateFormat = "EEEE"
         return formatter.string(from: date).capitalized
+    }
+
+    // 📊 Wygeneruj dane do wykresu
+    private func loadWeeklyStats() -> [DailyExerciseStat] {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        let week = (0..<7).compactMap { calendar.date(byAdding: .day, value: -$0, to: today) }
+
+        return week.map { day in
+            let exercises = allWorkoutDays
+                .filter { $0.date != nil && calendar.isDate($0.date!, inSameDayAs: day) }
+                .flatMap { ($0.exercises?.allObjects as? [Exercise]) ?? [] }
+                .filter { $0.isCompleted }
+
+            return DailyExerciseStat(date: day, count: exercises.count)
+        }.reversed()
     }
 }
