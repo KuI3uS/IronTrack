@@ -23,7 +23,10 @@ struct HomeView: View {
 
                 List {
                     ForEach(filteredWorkoutDays()) { day in
-                        NavigationLink(destination: WorkoutDayDetailView(workoutDay: day)) {
+                        NavigationLink {
+                            WorkoutDayDetailView(workoutDay: day)
+                                .environment(\.managedObjectContext, viewContext) // 👈 DODAJ TO
+                        } label: {
                             VStack(alignment: .leading) {
                                 Text(day.name ?? "Bez nazwy")
                                     .font(.headline)

@@ -6,12 +6,12 @@ struct ExerciseListView: View {
     @Environment(\.dismiss) private var dismiss
 
     @ObservedObject var workoutDay: WorkoutDay
+    var onSave: (() -> Void)? = nil
 
     @State private var exerciseName = ""
     @State private var note = ""
     @State private var reps = ""
     @State private var sets = ""
-    @State private var exerciseDate = Date()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -19,18 +19,16 @@ struct ExerciseListView: View {
                 .font(.title2)
                 .bold()
 
-            DatePicker("Data", selection: $exerciseDate, displayedComponents: [.date])
-
             TextField("Nazwa ćwiczenia", text: $exerciseName)
                 .textFieldStyle(.roundedBorder)
 
             TextField("Powtórzenia", text: $reps)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
                 .keyboardTypeCompat(.numberPad)
+                .textFieldStyle(.roundedBorder)
 
             TextField("Serie", text: $sets)
-                .textFieldStyle(.roundedBorder)
                 .keyboardTypeCompat(.numberPad)
+                .textFieldStyle(.roundedBorder)
 
             TextField("Notatka (opcjonalnie)", text: $note)
                 .textFieldStyle(.roundedBorder)
@@ -49,28 +47,19 @@ struct ExerciseListView: View {
     }
 
     private func addExercise() {
-        guard let context = workoutDay.managedObjectContext else {
-            print("Brak kontekstu dla workoutDay")
-            return
-        }
-
-        let exercise = Exercise(context: context)
+        let exercise = Exercise(context: viewContext)
         exercise.name = exerciseName
         exercise.reps = Int16(reps) ?? 0
         exercise.sets = Int16(sets) ?? 0
         exercise.note = note
-        exercise.date = exerciseDate
+        exercise.date = workoutDay.date
         exercise.workoutDay = workoutDay
 
         do {
-            try context.save()
-            // Czyścimy formularz
-            exerciseName = ""
-            note = ""
-            reps = ""
-            sets = ""
-            exerciseDate = Date()
-            dismiss() // Zamyka widok po zapisaniu
+            try viewContext.save()
+            print("✅ Ćwiczenie zapisane")
+            onSave?()
+            dismiss()
         } catch {
             print("❌ Błąd zapisu: \(error.localizedDescription)")
         }

@@ -18,8 +18,3 @@ struct ContentView: View {
         }
     }
 }
-
-#Preview {
-    let context = PersistenceController.preview.container.viewContext
-    return ContentView().environment(\.managedObjectContext, context)
-}

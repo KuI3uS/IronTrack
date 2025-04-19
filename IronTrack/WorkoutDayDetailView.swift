@@ -3,14 +3,27 @@ import CoreData
 
 struct WorkoutDayDetailView: View {
     @Environment(\.managedObjectContext) private var viewContext
-    @Environment(\.dismiss) private var dismiss
-
     @ObservedObject var workoutDay: WorkoutDay
 
-    @State private var exercises: [Exercise] = []
     @State private var dayNote: String = ""
     @State private var showAlert = false
     @State private var showExerciseSheet = false
+    @State private var selectedExerciseForEdit: Exercise?
+    @State private var refreshTrigger = UUID()
+
+    @FetchRequest private var exercises: FetchedResults<Exercise>
+
+    init(workoutDay: WorkoutDay) {
+        self.workoutDay = workoutDay
+
+        // Fetch tylko ćwiczeń z tego dnia
+        let predicate = NSPredicate(format: "workoutDay == %@", workoutDay)
+        _exercises = FetchRequest<Exercise>(
+            sortDescriptors: [NSSortDescriptor(keyPath: \Exercise.date, ascending: true)],
+            predicate: predicate,
+            animation: .default
+        )
+    }
 
     var completedCount: Int {
         exercises.filter { $0.isCompleted }.count
@@ -48,8 +61,10 @@ struct WorkoutDayDetailView: View {
                 Label("Dodaj ćwiczenie", systemImage: "plus.circle")
             }
             .sheet(isPresented: $showExerciseSheet) {
-                ExerciseListView(workoutDay: workoutDay)
-                    .environment(\.managedObjectContext, viewContext)
+                ExerciseListView(workoutDay: workoutDay) {
+                    refreshTrigger = UUID()
+                }
+                .environment(\.managedObjectContext, viewContext)
             }
 
             if exercises.isEmpty {
@@ -63,7 +78,6 @@ struct WorkoutDayDetailView: View {
                             Button {
                                 exercise.isCompleted.toggle()
                                 save()
-                                loadExercises()
                             } label: {
                                 Image(systemName: exercise.isCompleted ? "checkmark.circle.fill" : "circle")
                                     .foregroundColor(exercise.isCompleted ? .green : .gray)
@@ -81,18 +95,21 @@ struct WorkoutDayDetailView: View {
                                         .foregroundColor(.blue)
                                 }
                             }
+                            .onTapGesture {
+                                selectedExerciseForEdit = exercise
+                            }
                         }
                     }
                     .onDelete(perform: deleteExercise)
                 }
+                .id(refreshTrigger) // Wymusza odświeżenie listy
             }
 
             Button("Zakończ dzień") {
-                for i in exercises.indices {
-                    exercises[i].isCompleted = true
+                for ex in exercises {
+                    ex.isCompleted = true
                 }
                 save()
-                loadExercises()
                 showAlert = true
             }
             .buttonStyle(.borderedProminent)
@@ -101,33 +118,30 @@ struct WorkoutDayDetailView: View {
             Spacer()
         }
         .padding()
-        .navigationTitle("Szczegóły dnia")
         .onAppear {
-            self.dayNote = workoutDay.note ?? ""
-            loadExercises()
+            dayNote = workoutDay.note ?? ""
         }
-        .alert("Dzień zakończony", isPresented: $showAlert) {
+        .alert("Dzień zakończony ✅", isPresented: $showAlert) {
             Button("OK", role: .cancel) { }
         }
-    }
-
-    private func loadExercises() {
-        self.exercises = workoutDay.exercises?.allObjects as? [Exercise] ?? []
+        .sheet(item: $selectedExerciseForEdit) { exercise in
+            ExerciseEditView(exercise: exercise) {
+                refreshTrigger = UUID() // odśwież widok
+            }
+        }
+        .navigationTitle("Szczegóły dnia")
     }
 
     private func deleteExercise(at offsets: IndexSet) {
-        for index in offsets {
-            viewContext.delete(exercises[index])
-        }
+        offsets.map { exercises[$0] }.forEach(viewContext.delete)
         save()
-        loadExercises()
     }
 
     private func save() {
         do {
             try viewContext.save()
         } catch {
-            print("Błąd zapisu: \(error.localizedDescription)")
+            print("❌ Błąd zapisu: \(error.localizedDescription)")
         }
     }
 }
